@@ -2,35 +2,28 @@ import { useState, useEffect } from "react";
 import "./App.css";
 const App = () => {
   const [users, setUsers] = useState([]);
-  const [loginUser, setLoginUser] = useState("mojombo");
+  const [loginUser, setLoginUser] = useState("");
   const [loginUserDetails, setLoginUserDetails] = useState({});
 
   useEffect(() => {
     (async () => {
       try {
-        const response = await fetch("https://api.github.com/users");
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(`API failed status: ${response.status}`);
-        }
-        setUsers(data);
-      } catch (e) {
-        console.log(e.message);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
         const response = await fetch(
-          `https://api.github.com/users/${loginUser}`
+          `https://api.github.com/users${loginUser}`
         );
+        const data = await response.json();
+
         if (!response.ok) {
-          throw new Error(`API failed status: ${response.status}`);
+          throw new Error(`User details API failed status: ${response.status}`);
         }
-        const { location, twitter_username } = await response.json();
-        setLoginUserDetails({ location, twitter_username });
+
+        if (!loginUser) {
+          setUsers(data);
+          setLoginUser(`/${data[0].login}`);
+        } else {
+          const { location, twitter_username } = data;
+          setLoginUserDetails({ location, twitter_username });
+        }
       } catch (e) {
         console.log(e.message);
       }
@@ -38,7 +31,7 @@ const App = () => {
   }, [loginUser]);
 
   function handleLoginUserClick(event) {
-    setLoginUser(event.target.textContent);
+    setLoginUser(`/${event.target.textContent}`);
   }
   return (
     <main className="container">
